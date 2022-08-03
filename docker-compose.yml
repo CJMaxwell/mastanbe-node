@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+  server:
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    container_name: server
+    ports:
+      - 4000:4000
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@mastanpostgres:5432/${POSTGRES_DB}
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    restart: "unless-stopped"
+    networks:
+      - backend
+    links:
+      - mastandb
+    depends_on:
+      - mastandb
+  mastandb:
+    image: postgres:latest
+    container_name: mastandb
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:
+    # data:
+    #   driver: local
